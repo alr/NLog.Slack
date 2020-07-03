@@ -64,10 +64,11 @@ namespace NLog.Slack
                 .OnError(e => info.Continuation(e))
                 .WithMessage(message);
 
+            var color = this.GetSlackColorFromLogLevel(info.LogEvent.Level);
+            Attachment attachment = new Attachment(info.LogEvent.Message) { Color = color };
+
             if (this.ShouldIncludeProperties(info.LogEvent) || this.ContextProperties.Count > 0)
             {
-                var color = this.GetSlackColorFromLogLevel(info.LogEvent.Level);
-                Attachment attachment = new Attachment(info.LogEvent.Message) { Color = color };
                 var allProperties = this.GetAllProperties(info.LogEvent);
                 foreach (var property in allProperties)
                 {
@@ -80,16 +81,11 @@ namespace NLog.Slack
 
                     attachment.Fields.Add(new Field(property.Key) { Value = propertyValue, Short = true });
                 }
-                if (attachment.Fields.Count > 0)
-                    slack.AddAttachment(attachment);
             }
-      
+
             var exception = info.LogEvent.Exception;
             if (!this.Compact && exception != null)
             {
-                var color = this.GetSlackColorFromLogLevel(info.LogEvent.Level);
-                var attachment = new Attachment(exception.Message) { Color = color };
-
                 attachment.Fields.Add(new Field("Exception Message") { Value = exception.Message, Short = false });
                 attachment.Fields.Add(new Field("Exception Type") { Value = exception.GetType().Name, Short = true });
 
@@ -102,9 +98,10 @@ namespace NLog.Slack
                         attachment.Fields.Add(new Field(name) { Value = "```" + parts[idx].Replace("```", "'''") + "```" });
                     }
                 }
-
-                slack.AddAttachment(attachment);
             }
+
+            if (attachment.Fields.Count > 0)
+                slack.AddAttachment(attachment);
 
             slack.Send();
         }
