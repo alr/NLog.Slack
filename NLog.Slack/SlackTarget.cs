@@ -121,7 +121,7 @@ namespace NLog.Slack
         {
             { LogLevel.Warn, "warning" },
             { LogLevel.Error, "danger" },
-            { LogLevel.Fatal, "danger" },
+            { LogLevel.Fatal, "#ff0000" },
             { LogLevel.Info, "#2a80b9" },
         };
     }
